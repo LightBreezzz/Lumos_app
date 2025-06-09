@@ -101,15 +101,227 @@ body {
 }
 
 
-/* Основной контент */
-.content {
-    margin-left: 270px; /* Отступ равен ширине боковой панели + небольшой зазор */
+/* Общие стили */
+.today-page {
     padding: 20px;
-    font-family: Arial, sans-serif;
-    min-height: 100vh; /* Обеспечивает, чтобы контент занимал всю высоту экрана */
+    background-color: #f9f9f9;
+    min-height: 100vh;
+}
+
+.chart-container {
+    margin-bottom: 30px;
+}
+
+.chart-container canvas {
+    width: 100%;
+    max-width: 800px;
+    height: 300px;
+}
+
+#timelineChart {
+    width: 100%;
+    height: 300px;
+}
+
+.task-list {
+    margin-top: 20px;
+}
+
+.task-item {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.task-item h3 {
+    margin: 0 0 10px;
+    font-size: 1.2rem;
+    color: #555;
+}
+
+.task-item p {
+    margin: 0 0 10px;
+    color: #777;
+}
+
+.task-item .time-range {
+    display: block;
+    font-size: 0.9rem;
+    color: #aaa;
+}
+
+#add-task-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #2c3e50;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+#add-task-btn:hover {
+    background-color: #34495e;
+}
+.content {
+    margin-left: 250px; /* Отступ равен ширине боковой панели */
+    padding: 1rem; /* Внутренние отступы */
+    flex-grow: 1; /* Занимает всё оставшееся пространство */
+    width: calc(100% - 250px); /* Ширина основного контента */
+    min-height: 100vh; /* Минимальная высота контента */
+    background-color: #ffffff; /* Цвет фона */
 }
 
 /* Дополнительные стили для прокрутки основного контента */
 body.scrollable .content {
     overflow-y: auto; /* Добавляем прокрутку только для основного контента */
+}
+
+/* Стиль для модального окна */
+.modal {
+    display: none; /* Скрываем модальное окно по умолчанию */
+    position: fixed;
+    z-index: 1000; /* Чтобы окно было поверх других элементов */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Полупрозрачный фон */
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px; /* Ширина модального окна */
+    max-width: 90%; /* Ограничение ширины для мобильных устройств */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.close-btn {
+    position: absolute;
+    right: 10px;
+    top: 5px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #aaa;
+}
+
+.close-btn:hover {
+    color: #000;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.btn {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+}
+
+.auth-form-container {
+    background-color: #ffffff;
+    padding: 2rem;
+    background-position: 25% 75%;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
+}
+
+h2.text-center {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: #555;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+input:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
+}
+
+button.btn-submit {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button.btn-submit:hover {
+    background-color: #0056b3;
+}
+
+.invalid-feedback {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.switch-auth {
+    font-size: 0.875rem;
+    color: #6c757d;
+    text-align: center;
+}
+
+.switch-auth a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.switch-auth a:hover {
+    text-decoration: underline;
 }

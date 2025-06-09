@@ -4,6 +4,17 @@
         <li><a href="{% url 'index' %}">Главная</a></li>
         <li><a>О нас</a></li>
         <li><a>Контакты</a></li>
-        <li><a>Профиль</a></li>
+            {% if user.is_authenticated %} 
+                <button class="user-greeting">
+                    <span>Привет, {{ user.username }}</span>
+                    <a href="{% url 'logout' %}" class="btn btn-sm btn-danger">Выход</a>
+                </button>
+            {% else %}
+                <button class="guest-buttons">
+                    <a href="{% url 'login' %}" class="btn btn-sm btn-outline-primary me-2">Войти</a>
+                    /
+                    <a href="{% url 'register' %}" class="btn btn-sm btn-primary">Регистрация</a>
+                </button>
+            {% endif %}
     </ul>
 </div>

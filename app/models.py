@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import ValidationError
 
 
 class CustomUser(AbstractUser):
@@ -42,6 +43,13 @@ class CustomUser(AbstractUser):
     
     def __str__(self):
         return self.username
+    
+    def clean(self):
+        # Проверка уникальности email и телефона
+        if CustomUser.objects.filter(email=self.email).exclude(pk=self.pk).exists():
+            raise ValidationError("Пользователь с такой почтой уже существует.")
+        if CustomUser.objects.filter(phone=self.phone).exclude(pk=self.pk).exists():
+            raise ValidationError("Пользователь с таким номером телефона уже существует.")
     
 
 class Community(models.Model):
@@ -209,9 +217,23 @@ class Notification(models.Model):
         self.save()
 
 
+CATEGORY_CHOICES = [
+    ('Health', 'Здоровье'),
+    ('Finance', 'Финансы'),
+    ('Career', 'Карьера'),
+    ('Self-development', 'Саморазвитие'),
+    ('Spirituality', 'Духовность'),
+    ('Reset', 'Отдых'),
+    ('Relationship', 'Отношения'),
+    ('Family', 'Семья'),
+]
+
+
 class Category(models.Model):
     name = models.CharField(
         max_length=255,
+        choices=CATEGORY_CHOICES,
+        unique=True,
         verbose_name=_("Название категории")
     )
     description = models.TextField(
@@ -414,6 +436,11 @@ class Goal(models.Model):
 
 
 class Activity(models.Model):
+    name = models.CharField(
+        max_length=255,
+        null=True,
+        verbose_name=_("Название действия")
+    )
     user = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
@@ -442,21 +469,19 @@ class Activity(models.Model):
         null=True,
         help_text=_("Текстовое описание действий")
     )
-    timestamp = models.DateTimeField(
-        _("Время действия"),
-        help_text=_("Дата и время выполнения действия")
-    )
-    duration = models.PositiveBigIntegerField(
-        _("Продолжительность"),
-        blank=True,
-        null=True,
-        help_text=_("Продолжительность действия в минутах")
-    )
     value = models.FloatField(
         _("Значение"),
         blank=True,
         null=True,
         help_text=_("Числовое значение, связанное с действием")
+    )
+    start_time = models.DateTimeField(
+        null=True,
+        blank=True,
+    )  # Новое поле
+    end_time = models.DateTimeField(
+        null=True,
+        blank=True,
     )
     created_at = models.DateTimeField(
         _("Дата создания"),
@@ -470,7 +495,7 @@ class Activity(models.Model):
     class Meta:
         verbose_name = _("Действие")
         verbose_name_plural = _("Действия")
-        ordering = ["-timestamp"]  # Сортировка по времени действия (от новых к старым)
+        ordering = ["start_time"]  # Сортировка по времени действия (от новых к старым)
 
     def __str__(self):
         return f"{self.user.username} - {self.description[:50]}" if self.description else f"{self.user.username}"

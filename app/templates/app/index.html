@@ -1,9 +1,62 @@
-{% extends "base.html" %}
-{% block title %}Главная{% endblock %}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Сегодня{% endblock %}
 
 {% block content %}
-    <div class="content">
-        <h1>Добро пожаловать!</h1>
-        <p>Это пример страницы с боковой панелью слева.</p>
+<div class="today-page">
+    <!-- График -->
+    <div class="chart-container">
+        <canvas id="timelineChart"></canvas>
     </div>
+
+    <!-- Список задач -->
+    <div class="task-list">
+        <h2>Выполненные задачи</h2>
+        <ul>
+            {% for activity in activitys %}
+            <li class="task-item">
+                <h3>{{ activity.name }}</h3>
+                <p>{{ activity.description }}</p>
+                <span class="time-range">{{ activity.start_time|date:"H:i" }} - {{ activity.end_time|date:"H:i" }}</span>
+            </li>
+            {% empty %}
+            <p>Нет выполненных задач.</p>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Кнопка добавления задач -->
+    <button type="button" class="btn btn-primary mb-3" id="openModalBtn">
+        Добавить действие
+    </button>
+
+    <!-- Модальное окно -->
+    <div id="addActivityModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Добавить новое действие</h2>
+            <form id="activityForm" method="post" action="{% url 'add_activity' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="name">Название</label>
+                    <input type="text" class="form-control" id="name" name="name" placeholder="Введите название" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Описание</label>
+                    <textarea class="form-control" id="description" name="description" rows="3" placeholder="Введите описание"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="start_time">Время начала</label>
+                    <input type="time" class="form-control" id="start_time" name="start_time" required>
+                </div>
+                <div class="form-group">
+                    <label for="end_time">Время окончания</label>
+                    <input type="time" class="form-control" id="end_time" name="end_time" required>
+                </div>
+                <button type="submit" class="btn btn-success">Сохранить</button>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
