@@ -447,6 +447,14 @@ class Activity(models.Model):
         related_name="activities",
         verbose_name=_("Пользователь")
     )
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="activities",
+        verbose_name=_("Категория")
+    )
     subcategory = models.ForeignKey(
         Subcategory,
         on_delete=models.SET_NULL,

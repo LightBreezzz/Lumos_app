@@ -1,7 +1,7 @@
 from django import forms
 from .models import Activity
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser
+from .models import CustomUser, Category
 
 
 class RegistrationForm(UserCreationForm):
@@ -23,10 +23,17 @@ class RegistrationForm(UserCreationForm):
 
 
 class ActivityForm(forms.ModelForm):
+    category = forms.ModelChoiceField(
+        queryset=Category.objects.all(),  # Используем все категории из базы данных
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        label="Категория"
+    )
+
     class Meta:
         model = Activity
         fields = [
             'name', 
+            'category',
             'subcategory', 
             'goal', 
             'description', 
@@ -45,6 +52,7 @@ class ActivityForm(forms.ModelForm):
         }
         labels = {
             'name': 'Название действия',
+            'category': 'Категория',
             'subcategory': 'Подкатегория',
             'goal': 'Цель',
             'description': 'Описание',

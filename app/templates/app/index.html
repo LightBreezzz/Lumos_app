@@ -43,16 +43,41 @@
                     <input type="text" class="form-control" id="name" name="name" placeholder="Введите название" required>
                 </div>
                 <div class="form-group">
+                    <label for="category">Категория</label>
+                    <select class="form-control" id="category" name="category">
+                        {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="subcategory">Подкатегория</label>
+                    <select class="form-control" id="subcategory" name="subcategory">
+                        <option value="">Выберите подкатегорию</option>
+                    </select>
+                    <input type="text" class="form-control mt-2" id="newSubcategory" placeholder="Или введите новую подкатегорию">
+                </div>
+                <div class="form-group">
+                    <label for="goal">Цель</label>
+                    <select class="form-control" id="goal" name="goal">
+                        <option value="">Выберите цель</option>
+                        {% for goal in goals %}
+                            <option value="{{ goal.id }}">{{ goal.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="text" class="form-control mt-2" id="newGoal" placeholder="Или введите новую цель">
+                </div>
+                <div class="form-group">
                     <label for="description">Описание</label>
                     <textarea class="form-control" id="description" name="description" rows="3" placeholder="Введите описание"></textarea>
                 </div>
                 <div class="form-group">
                     <label for="start_time">Время начала</label>
-                    <input type="time" class="form-control" id="start_time" name="start_time" required>
+                    <input type="datetime-local" class="form-control" id="start_time" name="start_time" required>
                 </div>
                 <div class="form-group">
                     <label for="end_time">Время окончания</label>
-                    <input type="time" class="form-control" id="end_time" name="end_time" required>
+                    <input type="datetime-local" class="form-control" id="end_time" name="end_time" required>
                 </div>
                 <button type="submit" class="btn btn-success">Сохранить</button>
             </form>

@@ -10,4 +10,6 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('api/chart-data/', views.chart_data, name='chart_data'),
     path('add-activity/', views.add_activity, name='add_activity'),
+    path('add_subcategory/', views.add_subcategory, name='add_subcategory'),
+    path('add_goal/', views.add_goal, name='add_goal'),
 ]

@@ -12,10 +12,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script src="{% static 'scripts/today.js' %}"></script>
     <script src="{% static 'scripts/open.js' %}"></script> 
+    <script src="{% static 'scripts/ajax.js' %}"></script> 
     {% endblock %}
     <title>{% block title %}{% endblock %}</title>
 </head>
-<body>
+<body data-user-id="{{ user.id }}">
    <aside class="sidebar">
         <!-- Основное меню -->
         {% include 'menu.html' %}
