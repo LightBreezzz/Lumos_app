@@ -1,84 +1,51 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // Загрузка данных через API
     fetch('/api/chart-data/')
         .then(response => response.json())
-        .then(activities => {
-            console.log('Данные из API:', activities); // Проверяем данные
+        .then(apiData => {
+            console.log('Данные из API:', apiData);
 
-            function isValidTime(time) {
-                const timeRegex = /^([01]?\d|2[0-3]):([0-5]?\d)$/; // Регулярное выражение для HH:mm
-                return timeRegex.test(time);
-            }
+            // Преобразуем данные для Vis.js
+            const transformedData = transformDataForVis(apiData);
 
-            const validActivities = activities.filter(activity => {
-                return activity.start_time && activity.end_time &&
-                    isValidTime(activity.start_time) &&
-                    isValidTime(activity.end_time);
-            });
+            // Создаем DataSet для Vis.js
+            const items = new vis.DataSet(transformedData);
 
-            if (validActivities.length === 0) {
-                console.error('Нет корректных данных для отображения графика.');
-                return;
-            }
-            
-            const ctx = document.getElementById('timelineChart').getContext('2d');
-
-            // Подготовка данных для графика
-            const labels = Array.from({ length: 24 }, (_, i) => `${i}:00`); // Метки времени (00:00 - 23:59)
-            const datasets = activities.map(activity => ({
-                label: activity.name,
-                data: [
-                    { x: new Date(`1970-01-01T${activity.start_time}`), y: 0 },
-                    { x: new Date(`1970-01-01T${activity.end_time}`), y: 0 }
-                ],
-                backgroundColor: activity.color,
-                borderColor: activity.color,
-                borderWidth: 1,
-                barThickness: 20,
-                order: 1 // Упорядочивание блоков
-            }));
-
-            // Создание графика
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: datasets
+            // Настройки временной шкалы
+            const options = {
+                stack: true, // Стек активностей (если они перекрываются)
+                showCurrentTime: false, // Не показывать текущее время
+                zoomable: false, // Запрет масштабирования
+                start: new Date().setHours(0, 0, 0, 0), // Начало дня
+                end: new Date().setHours(23, 59, 59, 999), // Конец дня
+                editable: false, // Запрет редактирования элементов
+                orientation: 'top', // Ориентация меток времени
+                tooltip: {
+                    followMouse: true, // Подсказка следует за курсором
+                    overflowMethod: 'cap' // Ограничение текста в подсказке
                 },
-                options: {
-                    indexAxis: 'x', // Горизонтальная ориентация
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                unit: 'hour',
-                            },
-                            ticks: {
-                                source: 'labels'
-                            }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                display: false
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function (context) {
-                                    const activity = activities[context.dataIndex];
-                                    return `${activity.name} (${activity.start_time} - ${activity.end_time})`;
-                                }
-                            }
-                        }
+                format: {
+                    minorLabels: {
+                        hour: 'HH:mm', // Формат времени
+                        minute: 'HH:mm'
                     }
                 }
-            });
+            };
+
+            // Инициализация временной шкалы
+            const container = document.getElementById('visualization');
+            const timeline = new vis.Timeline(container, items, options);
         })
         .catch(error => console.error('Ошибка загрузки данных:', error));
 });
+
+// Функция для преобразования данных
+function transformDataForVis(apiData) {
+    const today = new Date().toISOString().split('T')[0]; // Текущая дата
+    return apiData.map(activity => ({
+        content: activity.name,
+        start: `${today}T${activity.start_time}`,
+        end: `${today}T${activity.end_time}`,
+        style: `background-color: ${activity.color};`, // Цвет из категории
+        title: `Название: ${activity.name}\nВремя: ${activity.start_time} - ${activity.end_time}` // Тултип
+    }));
+}

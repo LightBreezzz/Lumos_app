@@ -217,24 +217,16 @@ class Notification(models.Model):
         self.save()
 
 
-CATEGORY_CHOICES = [
-    ('Health', 'Здоровье'),
-    ('Finance', 'Финансы'),
-    ('Career', 'Карьера'),
-    ('Self-development', 'Саморазвитие'),
-    ('Spirituality', 'Духовность'),
-    ('Reset', 'Отдых'),
-    ('Relationship', 'Отношения'),
-    ('Family', 'Семья'),
-]
-
-
 class Category(models.Model):
     name = models.CharField(
         max_length=255,
-        choices=CATEGORY_CHOICES,
         unique=True,
         verbose_name=_("Название категории")
+    )
+    color = models.CharField(
+        max_length=7,
+        default="#CCCCC",
+        verbose_name=_("Цвет категории")
     )
     description = models.TextField(
         blank=True,

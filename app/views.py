@@ -7,6 +7,7 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from datetime import datetime
+from django.utils.timezone import localtime
 
 
 @login_required
@@ -58,13 +59,14 @@ def chart_data(request):
     # Преобразование данных в формат для Chart.js
     data = []
     for activity in activitys:
-        start_time = activity.start_time.strftime('%H:%M')
-        end_time = activity.end_time.strftime('%H:%M')
+        start_time = localtime(activity.start_time).strftime('%H:%M')
+        end_time = localtime(activity.end_time).strftime('%H:%M')
+        category_color = activity.subcategory.category.color if activity.subcategory else "#CCCCCC"  # Цвет по умолчанию
         data.append({
             'name': activity.name,
             'start_time': start_time,
             'end_time': end_time,
-            'color': '#FF6384'  # Можно задавать разные цвета
+            'color': category_color  # Можно задавать разные цвета
         })
 
     return JsonResponse(data, safe=False)
@@ -114,24 +116,25 @@ def add_goal(request):
         return JsonResponse({'success': False, 'error': 'Name and user_id are required'})
 
 
-# @login_required
-# def add_activity(request):
-#     if request.method == 'POST':
-#         form = ActivityForm(request.POST)
-#         if form.is_valid():
-#             activity = form.save(commit=False)
-#             activity.user = request.user  # Привязываем действие к текущему пользователю
-#             activity.save()
-#             return redirect('index')  # Перенаправление после успешного добавления
-#     else:
-#         form = ActivityForm()
-#     return render(request, 'app/index.html', {'form': form})
+@login_required
+def add_activity(request):
+    if request.method == 'POST':
+        form = ActivityForm(request.POST)
+        if form.is_valid():
+            activity = form.save(commit=False)
+            activity.user = request.user  # Привязываем действие к текущему пользователю
+            activity.save()
+            return redirect('index')  # Перенаправление после успешного добавления
+    else:
+        form = ActivityForm()
+    return render(request, 'app/index.html', {'form': form})
 
 
 @login_required
 def index(request):
     # Получаем задачи пользователя за текущий день
     categories = Category.objects.all()
+    subcategories = Subcategory.objects.all()
     today = datetime.now().date()
     activitys = Activity.objects.filter(
         user=request.user,
@@ -145,5 +148,6 @@ def index(request):
     context = {
         'categories': categories,
         'activitys': activitys,
+        'subcategories': subcategories,
     }
     return render(request, 'app/index.html', context)

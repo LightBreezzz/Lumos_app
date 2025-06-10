@@ -1,7 +1,8 @@
 {
   "dependencies": {
     "chart.js": "^4.4.9",
-    "chartjs-adapter-date-fns": "^3.0.0"
+    "chartjs-adapter-date-fns": "^3.0.0",
+    "vis-timeline": "^7.7.4"
   },
   "name": "lumos_app",
   "version": "1.0.0",
