@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
+from datetime import timedelta
 
 
 class CustomUser(AbstractUser):
@@ -382,6 +383,17 @@ class Goal(models.Model):
         null=True,
         verbose_name=_("Описание цели")
     )
+    PERIOD_CHOICES = [
+        ("day", "В день"),
+        ("week", "В неделю"),
+        ("month", "В месяц"),
+    ]
+    period = models.CharField(
+        max_length=10,
+        choices=PERIOD_CHOICES,
+        default="day",
+        verbose_name=_("Период")
+    )
     target_value = models.FloatField(
         verbose_name=_("Целевое значение"),
         help_text=_("Количество повторений, сумма денег или время выполнения")
@@ -418,6 +430,13 @@ class Goal(models.Model):
         verbose_name=_("Дата обновления")
     )
 
+    name = models.CharField(
+        max_length=255,
+        null=True,
+        verbose_name=_('Название цели'),
+        db_index=True
+    )
+
     class Meta:
         verbose_name = _("Цель")
         verbose_name_plural = _("Цели")
@@ -425,6 +444,14 @@ class Goal(models.Model):
 
     def __str__(self):
         return f"{self.description} ({self.status})"
+
+    def time_spent(self):
+        """Суммарное время, потраченное на эту цель (в секундах)."""
+        total = timedelta()
+        for activity in self.activities.all():
+            if activity.start_time and activity.end_time:
+                total += (activity.end_time - activity.start_time)
+        return total
 
 
 class Activity(models.Model):
@@ -516,7 +543,7 @@ class Habit(models.Model):
         related_name="habits",
         verbose_name=("Подкатегория")
     )
-    activiti = models.ManyToManyField(
+    activities = models.ManyToManyField(
         Activity,
         related_name="habits",
         verbose_name="Связанные привычки"

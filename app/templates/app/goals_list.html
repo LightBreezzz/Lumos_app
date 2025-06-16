@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load goal_extras %}
+{% load to_range %}
+
+{% block title %}Мои цели{% endblock %}
+
+{% block content %}
+<div class="today-page">
+    <div id="visualization-title">Мои цели</div>
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 18px;">
+        <a href="{% url 'goal_create' %}" class="btn-action" id="addGoalBtn">Добавить цель</a>
+    </div>
+    <div class="goals-graph-container" style="margin-bottom: 32px;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <h3 style="margin: 0;">Прогресс по целям</h3>
+            <select id="goalsRangeSelect" class="form-select" style="width: 180px;">
+                <option value="month">Месяц</option>
+                <option value="week">Неделя</option>
+                <option value="all">Всё время</option>
+            </select>
+        </div>
+        <canvas id="goalsLineChart" height="80"></canvas>
+    </div>
+    <div class="goals-list">
+        {% if goals %}
+            <ul>
+            {% for goal in goals %}
+            <li class="task-item goal-item" data-goal-id="{{ goal.pk }}">
+                <div style="display: flex; align-items: center; width: 100%;">
+                    <div style="flex:1;">
+                        <h3 style="margin-bottom: 4px;">{{ goal.name }}</h3>
+                        <div class="goal-meta">
+                            <span class="goal-category">Категория: {{ goal.category.name }}</span>
+                            {% if goal.subcategory %}<span class="goal-subcategory">/ {{ goal.subcategory.name }}</span>{% endif %}
+                        </div>
+                        <div class="goal-dates">
+                            <span>С {{ goal.start_date }}{% if goal.end_date %} по {{ goal.end_date }}{% endif %}</span>
+                        </div>
+                        <div class="goal-progress">
+                            <span class="goal-time">{{ goal.time_spent|duration }} из {{ goal.target_value|floatformat:0 }} ч / {{ goal.get_period_display }}</span>
+                        </div>
+                    </div>
+                    <div style="margin-left: 16px; display: flex; flex-direction: column; align-items: flex-end;">
+                        <span class="goal-status status-{{ goal.status }}">{{ goal.get_status_display }}</span>
+                        <a href="#" class="btn-edit-goal" title="Редактировать цель" data-goal-id="{{ goal.pk }}" style="margin-top: 8px;">✏️</a>
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>У вас пока нет целей.</p>
+        {% endif %}
+    </div>
+</div>
+<!-- Модальное окно для целей -->
+<div id="goalModal" class="modal">
+    <div class="modal-content">
+        <span class="close-goal-btn">&times;</span>
+        <h2 id="goalModalTitle">Создать цель</h2>
+        <form id="goalForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="goal_name">Название цели</label>
+                <input type="text" class="form-control" id="goal_name" name="name" placeholder="Например: Читать книгу" required>
+            </div>
+            <div class="form-group">
+                <label for="goal_category">Категория</label>
+                <select class="form-control" id="goal_category" name="category">
+                    {% for category in categories %}
+                        <option value="{{ category.id }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="goal_subcategory">Подкатегория</label>
+                <select class="form-control" id="goal_subcategory" name="subcategory">
+                    <option value="">Выберите подкатегорию</option>
+                    {% for subcategory in subcategories %}
+                        <option value="{{ subcategory.id }}" data-category="{{ subcategory.category.id }}">{{ subcategory.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="goal_description">Описание</label>
+                <textarea class="form-control" id="goal_description" name="description" rows="2" placeholder="Описание цели"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="goal_target_value">Сколько времени тратить</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <select class="form-control" id="goal_hours" style="width: 100px;" name="goal_hours">
+                        {% for h in 0|to:101 %}
+                            <option value="{{ h }}">{{ h }} ч</option>
+                        {% endfor %}
+                    </select>
+                    <select class="form-control" id="goal_minutes" style="width: 100px;" name="goal_minutes">
+                        {% for m in 0|to:60 %}
+                            <option value="{{ m }}">{{ m }} мин</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <input type="hidden" id="goal_target_value" name="target_value">
+            </div>
+            <div class="form-group">
+                <label for="goal_period">Период</label>
+                <select class="form-control" id="goal_period" name="period">
+                    <option value="day">В день</option>
+                    <option value="week">В неделю</option>
+                    <option value="month">В месяц</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="goal_start_date">Дата начала</label>
+                <input type="date" class="form-control" id="goal_start_date" name="start_date">
+            </div>
+            <div class="form-group">
+                <label for="goal_end_date">Дата окончания</label>
+                <input type="date" class="form-control" id="goal_end_date" name="end_date">
+            </div>
+            <div class="form-group">
+                <label for="goal_status">Статус</label>
+                <select class="form-control" id="goal_status" name="status">
+                    <option value="active">Активна</option>
+                    <option value="completed">Завершена</option>
+                    <option value="paused">Приостановлена</option>
+                    <option value="failed">Не выполнена</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-success">Сохранить</button>
+        </form>
+    </div>
+</div>
+{% endblock %} 

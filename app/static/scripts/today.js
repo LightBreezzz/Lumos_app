@@ -1,51 +1,61 @@
-document.addEventListener('DOMContentLoaded', function () {
+function renderTimeline() {
+    const container = document.getElementById('visualization');
+    if (!container) return;
     fetch('/api/chart-data/')
         .then(response => response.json())
         .then(apiData => {
             console.log('Данные из API:', apiData);
 
-            // Преобразуем данные для Vis.js
             const transformedData = transformDataForVis(apiData);
+            console.log('transformedData:', transformedData);
 
-            // Создаем DataSet для Vis.js
+            // Вычисляем min/max дату для диапазона графика
+            const allStarts = transformedData.map(x => new Date(x.start).getTime());
+            const allEnds = transformedData.map(x => new Date(x.end).getTime());
+            const minDate = new Date(Math.min(...allStarts));
+            const maxDate = new Date(Math.max(...allEnds));
+
             const items = new vis.DataSet(transformedData);
 
-            // Настройки временной шкалы
             const options = {
-                stack: true, // Стек активностей (если они перекрываются)
-                showCurrentTime: false, // Не показывать текущее время
-                zoomable: false, // Запрет масштабирования
-                start: new Date().setHours(0, 0, 0, 0), // Начало дня
-                end: new Date().setHours(23, 59, 59, 999), // Конец дня
-                editable: false, // Запрет редактирования элементов
-                orientation: 'top', // Ориентация меток времени
+                stack: true,
+                showCurrentTime: false,
+                zoomable: false,
+                start: minDate,
+                end: maxDate,
+                editable: false,
+                orientation: 'top',
                 tooltip: {
-                    followMouse: true, // Подсказка следует за курсором
-                    overflowMethod: 'cap' // Ограничение текста в подсказке
+                    followMouse: true,
+                    overflowMethod: 'cap'
                 },
                 format: {
                     minorLabels: {
-                        hour: 'HH:mm', // Формат времени
+                        hour: 'HH:mm',
                         minute: 'HH:mm'
                     }
                 }
             };
 
-            // Инициализация временной шкалы
-            const container = document.getElementById('visualization');
-            const timeline = new vis.Timeline(container, items, options);
+            container.innerHTML = '';
+            new vis.Timeline(container, items, options);
         })
         .catch(error => console.error('Ошибка загрузки данных:', error));
-});
+}
 
-// Функция для преобразования данных
+document.addEventListener('DOMContentLoaded', renderTimeline);
+
 function transformDataForVis(apiData) {
-    const today = new Date().toISOString().split('T')[0]; // Текущая дата
-    return apiData.map(activity => ({
-        content: activity.name,
-        start: `${today}T${activity.start_time}`,
-        end: `${today}T${activity.end_time}`,
-        style: `background-color: ${activity.color};`, // Цвет из категории
-        title: `Название: ${activity.name}\nВремя: ${activity.start_time} - ${activity.end_time}` // Тултип
-    }));
+    return apiData.map(activity => {
+        // Получаем только время из start_time и end_time
+        const startTime = activity.start_time.split('T')[1]?.slice(0,5) || '';
+        const endTime = activity.end_time.split('T')[1]?.slice(0,5) || '';
+        return {
+            content: activity.name,
+            start: activity.start_time,
+            end: activity.end_time,
+            style: `background-color: ${activity.color};`,
+            title: `${activity.name}\n (${startTime} - ${endTime})`
+        };
+    });
 }
