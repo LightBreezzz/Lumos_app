@@ -9,27 +9,22 @@ from django.contrib.auth.decorators import login_required
 from datetime import datetime, timedelta
 from django.utils.timezone import localtime
 from django.utils.dateparse import parse_date
-from django.db.models import Sum
 from django import template
 from django.db.models.functions import TruncDate
 from collections import defaultdict
-import random
 
 register = template.Library()
 
 @register.filter
 def duration(td):
     if not td:
-        return '0ч'
+        return "0 ч"
     total_seconds = int(td.total_seconds())
-    hours, remainder = divmod(total_seconds, 3600)
-    minutes, seconds = divmod(remainder, 60)
-    if hours:
-        return f"{hours}ч {minutes}м"
-    elif minutes:
-        return f"{minutes}м {seconds}с"
-    else:
-        return f"{seconds}с"
+    hours = total_seconds // 3600
+    minutes = (total_seconds % 3600) // 60
+    if hours > 0:
+        return f"{hours} ч {minutes} мин"
+    return f"{minutes} мин"
 
 @login_required
 def home(request):
@@ -357,6 +352,7 @@ def goal_json(request, pk):
 def api_goals_progress(request):
     user = request.user
     period = request.GET.get('range', 'month')
+    goal_id = request.GET.get('goal_id')
     today = datetime.now().date()
     if period == 'week':
         start = today - timedelta(days=6)
@@ -365,12 +361,20 @@ def api_goals_progress(request):
     else:
         start = None
     goals = Goal.objects.filter(user=user)
+    if goal_id:
+        goals = goals.filter(id=goal_id)
     colors = ["#36A2EB", "#FF6384", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40", "#8BC34A", "#E91E63"]
     result = []
     for idx, goal in enumerate(goals):
         qs = goal.activities.all()
+        # Определяем дату старта графика
+        graph_start = None
         if start:
-            qs = qs.filter(start_time__date__gte=start, start_time__date__lte=today)
+            graph_start = max(start, goal.start_date)
+        else:
+            graph_start = goal.start_date
+        if graph_start:
+            qs = qs.filter(start_time__date__gte=graph_start, start_time__date__lte=today)
         qs = qs.annotate(day=TruncDate('start_time')).values('day')
         day_map = defaultdict(float)
         for row in qs:
@@ -379,8 +383,7 @@ def api_goals_progress(request):
             for act in acts:
                 if act.start_time and act.end_time:
                     day_map[day] += (act.end_time - act.start_time).total_seconds() / 3600
-        # Собираем точки по всем дням диапазона
-        days = [(start + timedelta(days=i)) for i in range((today - start).days + 1)] if start else list(day_map.keys())
+        days = [(graph_start + timedelta(days=i)) for i in range((today - graph_start).days + 1)] if graph_start else list(day_map.keys())
         data = [{"date": d.isoformat(), "hours": round(day_map.get(d, 0), 2)} for d in days]
         result.append({
             "goal_id": goal.id,

@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 
 class CustomUser(AbstractUser):
@@ -451,6 +451,27 @@ class Goal(models.Model):
         for activity in self.activities.all():
             if activity.start_time and activity.end_time:
                 total += (activity.end_time - activity.start_time)
+        return total
+
+    def period_start(self):
+        today = datetime.now().date()
+        if self.period == "day":
+            return today
+        elif self.period == "week":
+            return today - timedelta(days=today.weekday())
+        elif self.period == "month":
+            return today.replace(day=1)
+        return self.start_date
+
+    def period_time_spent(self):
+        start = self.period_start()
+        acts = self.activities.filter(
+            start_time__date__gte=start
+        )
+        total = timedelta()
+        for act in acts:
+            if act.start_time and act.end_time:
+                total += (act.end_time - act.start_time)
         return total
 
 

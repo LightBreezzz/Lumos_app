@@ -7,21 +7,11 @@
 
 {% block content %}
 <div class="today-page">
-    <div id="visualization-title">Мои цели</div>
+    <!-- <div id="visualization-title">Мои цели</div> -->
     <div style="display: flex; justify-content: flex-end; margin-bottom: 18px;">
         <a href="{% url 'goal_create' %}" class="btn-action" id="addGoalBtn">Добавить цель</a>
     </div>
-    <div class="goals-graph-container" style="margin-bottom: 32px;">
-        <div style="display: flex; align-items: center; gap: 16px;">
-            <h3 style="margin: 0;">Прогресс по целям</h3>
-            <select id="goalsRangeSelect" class="form-select" style="width: 180px;">
-                <option value="month">Месяц</option>
-                <option value="week">Неделя</option>
-                <option value="all">Всё время</option>
-            </select>
-        </div>
-        <canvas id="goalsLineChart" height="80"></canvas>
-    </div>
+    
     <div class="goals-list">
         {% if goals %}
             <ul>
@@ -38,12 +28,13 @@
                             <span>С {{ goal.start_date }}{% if goal.end_date %} по {{ goal.end_date }}{% endif %}</span>
                         </div>
                         <div class="goal-progress">
-                            <span class="goal-time">{{ goal.time_spent|duration }} из {{ goal.target_value|floatformat:0 }} ч / {{ goal.get_period_display }}</span>
+                            <span class="goal-time">{{ goal.period_time_spent|duration }} из {{ goal.target_value|floatformat:0 }} ч / {{ goal.get_period_display }}</span>
                         </div>
                     </div>
-                    <div style="margin-left: 16px; display: flex; flex-direction: column; align-items: flex-end;">
+                    <div style="margin-left: 16px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
                         <span class="goal-status status-{{ goal.status }}">{{ goal.get_status_display }}</span>
-                        <a href="#" class="btn-edit-goal" title="Редактировать цель" data-goal-id="{{ goal.pk }}" style="margin-top: 8px;">✏️</a>
+                        <a href="#" class="btn-edit-goal" title="Редактировать цель" data-goal-id="{{ goal.pk }}">✏️</a>
+                        <button class="btn-action btn-goal-chart" data-goal-id="{{ goal.pk }}" style="margin-top: 8px;">График</button>
                     </div>
                 </div>
             </li>
@@ -129,6 +120,14 @@
             </div>
             <button type="submit" class="btn btn-success">Сохранить</button>
         </form>
+    </div>
+</div>
+<!-- Модалка для индивидуального графика цели -->
+<div id="goalChartModal" class="modal" style="display:none; align-items:center; justify-content:center;">
+    <div class="modal-content" style="min-width:680px; min-height:640px; position:relative;">
+        <span class="close-goal-chart-btn" style="position:absolute; top:10px; right:18px; cursor:pointer; font-size:1.5em;">&times;</span>
+        <h4 id="goalChartModalTitle" style="margin-bottom:18px;"></h4>
+        <canvas id="goalSingleChart" width="600" height="320"></canvas>
     </div>
 </div>
 {% endblock %} 

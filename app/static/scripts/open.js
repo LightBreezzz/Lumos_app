@@ -24,19 +24,22 @@ document.addEventListener('DOMContentLoaded', function () {
     const goalTargetValue = document.getElementById('goal_target_value');
     const goalName = document.getElementById('goal_name');
 
-    // --- График целей ---
-    const goalsLineChartCanvas = document.getElementById('goalsLineChart');
-    const goalsRangeSelect = document.getElementById('goalsRangeSelect');
-    let goalsLineChartInstance = null;
+    // Индивидуальный график цели
+    const goalChartModal = document.getElementById('goalChartModal');
+    const goalChartModalTitle = document.getElementById('goalChartModalTitle');
+    const goalSingleChartCanvas = document.getElementById('goalSingleChart');
+    const closeGoalChartBtn = document.querySelector('.close-goal-chart-btn');
+    let goalSingleChartInstance = null;
 
-    function fetchAndRenderGoalsChart() {
-        if (!goalsLineChartCanvas) return;
-        const range = goalsRangeSelect ? goalsRangeSelect.value : 'month';
-        fetch(`/api/goals-progress/?range=${range}`)
+    function fetchAndRenderSingleGoalChart(goalId) {
+        if (!goalSingleChartCanvas) return;
+        fetch(`/api/goals-progress/?goal_id=${goalId}`)
             .then(r => r.json())
             .then(data => {
-                const labels = data.length ? data[0].data.map(d => d.date) : [];
-                const datasets = data.map(goal => ({
+                if (!data.length) return;
+                const goal = data[0];
+                const labels = goal.data.map(d => d.date);
+                const dataset = {
                     label: goal.goal_name,
                     data: goal.data.map(d => d.hours),
                     borderColor: goal.color,
@@ -46,10 +49,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     pointRadius: 4,
                     pointHoverRadius: 6,
                     borderWidth: 2,
-                    hidden: false,
-                }));
-                // Добавляем горизонтальную линию-таргет для каждой цели
-                const targetLines = data.map(goal => ({
+                };
+                const targetLine = {
                     label: `Таргет: ${goal.goal_name}`,
                     data: Array(labels.length).fill(goal.target),
                     borderColor: goal.color,
@@ -57,12 +58,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     pointRadius: 0,
                     borderWidth: 1,
                     fill: false,
-                    hidden: true,
-                }));
-                if (goalsLineChartInstance) goalsLineChartInstance.destroy();
-                goalsLineChartInstance = new Chart(goalsLineChartCanvas, {
+                    hidden: false,
+                };
+                if (goalSingleChartInstance) goalSingleChartInstance.destroy();
+                // вычисляем максимальное значение данных
+                const maxY = Math.max(3, ...goal.data.map(d => d.hours));
+                goalSingleChartInstance = new Chart(goalSingleChartCanvas, {
                     type: 'line',
-                    data: { labels, datasets: [...datasets, ...targetLines] },
+                    data: { labels, datasets: [dataset, targetLine] },
                     options: {
                         plugins: {
                             legend: { display: true, position: 'bottom' },
@@ -79,6 +82,8 @@ document.addEventListener('DOMContentLoaded', function () {
                             y: {
                                 title: { display: true, text: 'Часы' },
                                 beginAtZero: true,
+                                min: 0,
+                                max: maxY,
                                 ticks: {
                                     stepSize: 1,
                                     callback: function(val) { return val; }
@@ -88,15 +93,28 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     }
                 });
+                goalChartModalTitle.textContent = goal.goal_name;
             });
     }
-    if (goalsLineChartCanvas) {
-        fetchAndRenderGoalsChart();
-        if (goalsRangeSelect) {
-            goalsRangeSelect.addEventListener('change', fetchAndRenderGoalsChart);
-        }
+
+    document.querySelectorAll('.btn-goal-chart').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const goalId = btn.dataset.goalId;
+            fetchAndRenderSingleGoalChart(goalId);
+            if (goalChartModal) goalChartModal.style.display = 'flex';
+        });
+    });
+    if (closeGoalChartBtn && goalChartModal) {
+        closeGoalChartBtn.addEventListener('click', function () {
+            goalChartModal.style.display = 'none';
+        });
     }
-    // --- Конец графика целей ---
+    window.addEventListener('click', function (event) {
+        if (event.target === goalChartModal) {
+            goalChartModal.style.display = 'none';
+        }
+    });
 
     // Открываем модальное окно
     if (openModalBtn && modal) {
@@ -315,6 +333,8 @@ document.addEventListener('DOMContentLoaded', function () {
         item.addEventListener('click', function(e) {
             // Не срабатывает, если клик по ✏️
             if (e.target.classList.contains('btn-edit-goal')) return;
+            // Не срабатывает, если клик по кнопке графика
+            if (e.target.classList.contains('btn-goal-chart')) return;
             const goalId = item.dataset.goalId;
             fetch(`/goals/${goalId}/json/`)
                 .then(response => response.json())
@@ -437,5 +457,27 @@ document.addEventListener('DOMContentLoaded', function () {
             return Math.round(val * 60) + ' мин';
         }
         return val + ' ч';
+    }
+
+    // Применяем сохранённую тему на всех страницах
+    const themeToggleSwitch = document.getElementById('themeToggleSwitch');
+    if (themeToggleSwitch) {
+        // Установить состояние чекбокса при загрузке
+        if(localStorage.getItem('theme') === 'dark') {
+            themeToggleSwitch.checked = true;
+            document.body.classList.add('dark-theme');
+        } else {
+            themeToggleSwitch.checked = false;
+            document.body.classList.remove('dark-theme');
+        }
+        themeToggleSwitch.addEventListener('change', function() {
+            if (themeToggleSwitch.checked) {
+                document.body.classList.add('dark-theme');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.body.classList.remove('dark-theme');
+                localStorage.setItem('theme', 'light');
+            }
+        });
     }
 });
