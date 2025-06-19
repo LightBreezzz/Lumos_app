@@ -214,7 +214,10 @@ def api_categories_stats(request):
         month_ago = datetime.now().date() - timedelta(days=29)
         qs = qs.filter(start_time__date__gte=month_ago)
     elif period == 'custom' and start_date and end_date:
-        qs = qs.filter(start_time__date__gte=parse_date(start_date), start_time__date__lte=parse_date(end_date))
+        qs = qs.filter(
+            start_time__date__gte=parse_date(start_date),
+            start_time__date__lte=parse_date(end_date)
+        )
     # else: all time
 
     # Группируем по категориям, считаем суммарное время (в секундах)
@@ -237,7 +240,12 @@ def api_categories_stats(request):
     values = [round(v['value']/3600, 2) for v in data.values()]  # часы
     colors = [v['color'] for v in data.values()]
     ids = list(data.keys())
-    return JsonResponse({'labels': labels, 'data': values, 'colors': colors, 'ids': ids})
+    return JsonResponse({
+        'labels': labels,
+        'data': values,
+        'colors': colors,
+        'ids': ids
+    })
 
 
 @login_required
@@ -249,7 +257,9 @@ def api_subcategories_stats(request):
     start_date = request.GET.get('start')
     end_date = request.GET.get('end')
 
-    qs = Activity.objects.filter(user=user, category_id=category_id)
+    # Новый фильтр: ищем активности, у которых подкатегория относится к нужной категории
+    qs = Activity.objects.filter(user=user)
+    qs = qs.filter(subcategory__category_id=category_id)
     if period == 'today':
         qs = qs.filter(start_time__date=datetime.now().date())
     elif period == 'week':
@@ -259,7 +269,10 @@ def api_subcategories_stats(request):
         month_ago = datetime.now().date() - timedelta(days=29)
         qs = qs.filter(start_time__date__gte=month_ago)
     elif period == 'custom' and start_date and end_date:
-        qs = qs.filter(start_time__date__gte=parse_date(start_date), start_time__date__lte=parse_date(end_date))
+        qs = qs.filter(
+            start_time__date__gte=parse_date(start_date),
+            start_time__date__lte=parse_date(end_date)
+        )
     # else: all time
 
     data = {}
@@ -279,7 +292,11 @@ def api_subcategories_stats(request):
     labels = [v['label'] for v in data.values()]
     values = [round(v['value']/3600, 2) for v in data.values()]
     colors = [v['color'] for v in data.values()]
-    return JsonResponse({'labels': labels, 'data': values, 'colors': colors})
+    return JsonResponse({
+        'labels': labels,
+        'data': values,
+        'colors': colors
+    })
 
 
 @login_required

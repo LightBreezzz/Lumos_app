@@ -717,3 +717,30 @@ body.dark-theme #visualization .vis-timeline .vis-item {
 body.dark-theme #visualization .vis-timeline .vis-item .vis-item-content {
   color: #fff !important;
 }
+body.dark-theme .form-text.text-muted {
+    color: #ffffff !important;
+}
+
+.form-text.text-muted {
+    color: #111 !important;
+}
+
+.invalid-feedback {
+    color: #ff0000 !important;
+}
+
+body:not(.dark-theme), html:not(.dark-theme) {
+  color: #111;
+}
+
+body:not(.dark-theme) .form-control,
+body:not(.dark-theme) .form-label,
+body:not(.dark-theme) .form-text,
+body:not(.dark-theme) .modal-content,
+body:not(.dark-theme) .auth-form-container,
+body:not(.dark-theme) .today-page,
+body:not(.dark-theme) .goals-list,
+body:not(.dark-theme) .goal-status,
+body:not(.dark-theme) .btn-action {
+  color: #111 !important;
+}
