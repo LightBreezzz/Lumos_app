@@ -1,0 +1,37 @@
+{% load static %}
+<div class="settings">
+    <ul>
+        <li><a href="{% url 'categories_stats' %}">Главная</a></li>
+        <li style="display: flex; align-items: center; min-height: 40px;">
+            <span class="switch-label" style="color: #888; font-size: 1rem; display: flex; align-items: center; justify-content: flex-end; flex: 0 0 auto; margin-right: 12px;">Переключить тему</span>
+            <label class="switch">
+                <input type="checkbox" id="themeToggleSwitch">
+                <span class="slider round"></span>
+            </label>
+        </li>
+
+            {% if user.is_authenticated %} 
+                <div class="user-greeting" style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
+                    <span style="font-size: 1.02rem; color: #222; margin-bottom: 2px;">{{ user.username }}</span>
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button class="btn-action" type="submit" style="width: 100%;">
+                            <svg viewBox="0 0 24 24" style="margin-right: 6px;"><path d="M16 13v-2H7V8l-5 4 5 4v-3zM20 3h-8v2h8v14h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" fill="white"/></svg>
+                            Выйти
+                        </button>
+                    </form>
+                </div>
+            {% else %}
+                <div class="guest-buttons" style="display: flex; gap: 8px;">
+                    <a href="{% url 'login' %}" class="btn-action" style="padding: 10px 18px;">
+                        <svg viewBox="0 0 24 24" style="margin-right: 6px;"><path d="M10 17l5-5-5-5v10zm9-14H5c-1.1 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" fill="white"/></svg>
+                        Войти
+                    </a>
+                    <a href="{% url 'register' %}" class="btn-action" style="padding: 10px 18px;">
+                        <svg viewBox="0 0 24 24" style="margin-right: 6px;"><path d="M12 7v10m5-5H7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+                        Регистрация
+                    </a>
+                </div>
+            {% endif %}
+    </ul>
+</div>

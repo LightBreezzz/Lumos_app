@@ -1,0 +1,26 @@
+{
+  "dependencies": {
+    "chart.js": "^4.4.9",
+    "chartjs-adapter-date-fns": "^3.0.0",
+    "vis-timeline": "^7.7.4"
+  },
+  "name": "lumos_app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LightBreezzz/Lumos_app.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/LightBreezzz/Lumos_app/issues"
+  },
+  "homepage": "https://github.com/LightBreezzz/Lumos_app#readme"
+}

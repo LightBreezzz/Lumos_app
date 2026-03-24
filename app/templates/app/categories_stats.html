@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Статистика по категориям{% endblock %}
+
+{% block content %}
+<div class="today-page">
+    <!-- <div id="visualization-title">Статистика по категориям</div> -->
+    <div class="chart-container" style="max-width: 600px; margin: 0 auto 32px auto;">
+        <canvas id="categoriesPieChart" width="600" height="400"></canvas>
+    </div>
+    <div style="display: flex; gap: 12px; justify-content: center; margin-bottom: 24px; flex-wrap: wrap;">
+        <button class="btn-action period-btn" data-period="all">Всё время</button>
+        <button class="btn-action period-btn" data-period="today">Сегодня</button>
+        <button class="btn-action period-btn" data-period="week">Неделя</button>
+        <button class="btn-action period-btn" data-period="month">Месяц</button>
+        <input type="date" id="startDate" class="form-control" style="width: 140px;">
+        <input type="date" id="endDate" class="form-control" style="width: 140px;">
+        <button class="btn-action" id="customRangeBtn">Промежуток</button>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'scripts/categories_stats.js' %}"></script>
+{% endblock %} 
